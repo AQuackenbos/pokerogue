@@ -1721,6 +1721,7 @@ export class AddSubstituteAttr extends MoveEffectAttr {
 
 export enum MultiHitType {
   _2,
+  _2_DISTRIBUTED,
   _2_TO_5,
   _3,
   _10,
@@ -2203,6 +2204,11 @@ export class MultiHitAttr extends MoveAttr {
           return 5;
         }
       }
+      case MultiHitType._2_DISTRIBUTED:
+        // Count enemy pokemon on the field
+        const enemyTargetCount = user.scene.getEnemyParty().filter(p => p.isActive(true)).length;
+        // If there are 2 enemies, each should receive 1 hit; otherwise, 1 enemy should receive 2 hits
+        return enemyTargetCount === 2 ? 1 : 2;
       case MultiHitType._2:
         return 2;
       case MultiHitType._3:
@@ -10005,9 +10011,9 @@ export function initMoves() {
       .attr(ChangeTypeAttr, Type.PSYCHIC)
       .powderMove(),
     new AttackMove(Moves.DRAGON_DARTS, Type.DRAGON, MoveCategory.PHYSICAL, 50, 100, 10, -1, 0, 8)
-      .attr(MultiHitAttr, MultiHitType._2)
-      .makesContact(false)
-      .partial(), // smart targetting is unimplemented
+      .attr(MultiHitAttr, MultiHitType._2_DISTRIBUTED)
+      .target(MoveTarget.ALL_NEAR_ENEMIES)
+      .makesContact(false),
     new StatusMove(Moves.TEATIME, Type.NORMAL, -1, 10, -1, 0, 8)
       .attr(EatBerryAttr)
       .target(MoveTarget.ALL),
